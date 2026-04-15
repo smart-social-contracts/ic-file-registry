@@ -1,0 +1,36 @@
+type HttpRequest = record {
+    method: text;
+    url: text;
+    headers: vec record { text; text };
+    body: blob;
+};
+
+type HttpResponse = record {
+    status_code: nat16;
+    headers: vec record { text; text };
+    body: blob;
+    streaming_strategy: opt text;
+    upgrade: opt bool;
+};
+
+service : {
+    // Public queries
+    list_namespaces     : ()     -> (text) query;
+    list_files          : (text) -> (text) query;
+    get_file            : (text) -> (text) query;
+    get_stats           : ()     -> (text) query;
+    get_acl             : ()     -> (text) query;
+
+    // Authenticated updates
+    store_file          : (text) -> (text);
+    store_file_chunk    : (text) -> (text);
+    finalize_chunked_file : (text) -> (text);
+    delete_file         : (text) -> (text);
+    update_namespace    : (text) -> (text);
+    delete_namespace    : (text) -> (text);
+    grant_publish       : (text) -> (text);
+    revoke_publish      : (text) -> (text);
+
+    // HTTP gateway
+    http_request        : (HttpRequest) -> (HttpResponse) query;
+};
