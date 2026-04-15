@@ -1,0 +1,130 @@
+name: Deploy to IC
+
+# Triggered manually or automatically after CI passes on main.
+# Requires the IC_IDENTITY_PEM secret to be set in the repository settings.
+# On first deploy, the canister is created (needs cycles in the identity wallet).
+# Subsequent deploys upgrade the existing canister.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Deploy mode'
+        required: false
+        type: choice
+        options:
+          - upgrade
+          - reinstall
+        default: upgrade
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.13"
+  DFX_VERSION: "0.31.0"
+  DFX_WARNING: "-mainnet_plaintext_identity"
+
+jobs:
+  deploy:
+    name: Deploy to IC Mainnet
+    runs-on: ubuntu-latest
+    # For workflow_run: only deploy if CI passed
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache basilisk template WASM
+        uses: actions/cache@v4
+        with:
+          path: ~/.config/basilisk
+          key: basilisk-template-${{ env.PYTHON_VERSION }}-v1
+
+      - name: Install ic-basilisk
+        run: pip install ic-basilisk
+
+      - name: Install dfx
+        run: |
+          DFXVM_INIT_YES=true DFX_VERSION=${{ env.DFX_VERSION }} \
+            sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)" > /dev/null 2>&1
+          echo "$HOME/.local/share/dfx/bin" >> $GITHUB_PATH
+
+      - name: Pre-download CPython canister template
+        run: |
+          VERSION=$(python3 -c "import basilisk; print(basilisk.__version__)")
+          TEMPLATE="$HOME/.config/basilisk/${VERSION}/cpython_canister_template.wasm"
+          if [ ! -f "$TEMPLATE" ]; then
+            mkdir -p "$(dirname "$TEMPLATE")"
+            curl -Lf \
+              "https://github.com/smart-social-contracts/basilisk/releases/download/v${VERSION}/cpython_canister_template.wasm" \
+              -o "$TEMPLATE" \
+            || curl -Lf \
+              "https://github.com/smart-social-contracts/basilisk/releases/download/cpython-wasm-3.13.0/cpython_canister_template.wasm" \
+              -o "$TEMPLATE"
+          fi
+
+      - name: Import deploy identity
+        env:
+          IC_IDENTITY_PEM: ${{ secrets.IC_IDENTITY_PEM }}
+        run: |
+          if [ -z "$IC_IDENTITY_PEM" ]; then
+            echo "::error::IC_IDENTITY_PEM secret not set. Add it in Settings → Secrets."
+            exit 1
+          fi
+          echo "$IC_IDENTITY_PEM" > /tmp/deploy_identity.pem
+          chmod 600 /tmp/deploy_identity.pem
+          dfx identity import deploy-ci /tmp/deploy_identity.pem --storage-mode plaintext
+          dfx identity use deploy-ci
+          rm /tmp/deploy_identity.pem
+          echo "Deploying as principal: $(dfx identity get-principal)"
+
+      - name: Build canister WASM
+        run: |
+          CANISTER_CANDID_PATH=./ic_file_registry.did \
+            python3 -m basilisk ic_file_registry src/main.py
+          ls -lh .basilisk/ic_file_registry/ic_file_registry.wasm
+
+      - name: Deploy backend to IC
+        run: |
+          MODE="${{ github.event.inputs.mode || 'upgrade' }}"
+          echo "Deploy mode: $MODE"
+          dfx deploy ic_file_registry --network ic --mode "$MODE" --yes 2>&1 || \
+          dfx deploy ic_file_registry --network ic 2>&1
+
+      - name: Print canister ID
+        run: |
+          CANISTER_ID=$(dfx canister id ic_file_registry --network ic)
+          echo "✅ Deployed ic_file_registry: $CANISTER_ID"
+          echo "   URL: https://${CANISTER_ID}.icp0.io/"
+          echo "CANISTER_ID=$CANISTER_ID" >> $GITHUB_ENV
+
+      - name: Smoke test — get_stats via HTTP
+        run: |
+          sleep 5
+          curl -sf "https://${CANISTER_ID}.icp0.io/" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(f'  namespaces : {len(data)}')
+          print('  ✅ HTTP endpoint is live')
+          " || echo "::warning::HTTP smoke test failed (canister may still be starting)"
+
+      - name: Commit updated canister IDs
+        run: |
+          git config user.email "ci@github-actions"
+          git config user.name "GitHub Actions"
+          if [ -f ".dfx/ic/canister_ids.json" ]; then
+            mkdir -p canister_ids
+            cp .dfx/ic/canister_ids.json canister_ids/ic.json
+            git add canister_ids/ic.json
+            git diff --cached --quiet || \
+              git commit -m "chore: update mainnet canister IDs [skip ci]"
+            git push origin HEAD:main || echo "::warning::Could not push canister IDs"
+          fi

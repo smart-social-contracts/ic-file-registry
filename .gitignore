@@ -6,4 +6,4 @@ frontend/.svelte-kit/
 __pycache__/
 *.pyc
 .env
-canister_ids.json
+# canister_ids/ is intentionally committed (mainnet canister ID mappings)

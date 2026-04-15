@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  PYTHON_VERSION: "3.13"
+  DFX_VERSION: "0.31.0"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Unit tests — no canister needed, fast
+  # ---------------------------------------------------------------------------
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install deps
+        run: pip install pytest ic-basilisk
+
+      - name: Run unit tests
+        run: pytest tests/test_unit.py -v --tb=short
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Integration tests — builds WASM, deploys locally, tests full API
+  # ---------------------------------------------------------------------------
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache basilisk template WASM
+        uses: actions/cache@v4
+        with:
+          path: ~/.config/basilisk
+          key: basilisk-template-${{ env.PYTHON_VERSION }}-v1
+
+      - name: Cache dfx binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/dfinity
+          key: dfx-${{ env.DFX_VERSION }}
+
+      - name: Install ic-basilisk
+        run: pip install ic-basilisk pytest
+
+      - name: Install dfx
+        run: |
+          DFXVM_INIT_YES=true DFX_VERSION=${{ env.DFX_VERSION }} \
+            sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)" > /dev/null 2>&1
+          echo "$HOME/.local/share/dfx/bin" >> $GITHUB_PATH
+
+      - name: Pre-download CPython canister template
+        run: |
+          VERSION=$(python3 -c "import basilisk; print(basilisk.__version__)")
+          TEMPLATE="$HOME/.config/basilisk/${VERSION}/cpython_canister_template.wasm"
+          if [ ! -f "$TEMPLATE" ]; then
+            mkdir -p "$(dirname "$TEMPLATE")"
+            echo "Downloading template WASM for basilisk v${VERSION}..."
+            curl -Lf \
+              "https://github.com/smart-social-contracts/basilisk/releases/download/v${VERSION}/cpython_canister_template.wasm" \
+              -o "$TEMPLATE" \
+            || curl -Lf \
+              "https://github.com/smart-social-contracts/basilisk/releases/download/cpython-wasm-3.13.0/cpython_canister_template.wasm" \
+              -o "$TEMPLATE"
+          fi
+          ls -lh "$TEMPLATE"
+
+      - name: Build canister WASM
+        run: |
+          CANISTER_CANDID_PATH=./ic_file_registry.did \
+            python3 -m basilisk ic_file_registry src/main.py
+          ls -lh .basilisk/ic_file_registry/ic_file_registry.wasm
+
+      - name: Start local replica
+        run: |
+          dfx start --background --pocketic
+          sleep 3
+
+      - name: Deploy canister
+        run: dfx deploy ic_file_registry
+
+      - name: Run integration tests
+        run: pytest tests/test_integration.py -v --tb=short
+
+      - name: Stop replica
+        if: always()
+        run: dfx stop || true
