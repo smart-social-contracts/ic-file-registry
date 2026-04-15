@@ -4,10 +4,10 @@
   import { isAuthenticated } from '$lib/auth.js';
   import { FolderOpen, Package, HardDrive, RefreshCw, AlertCircle } from 'lucide-svelte';
 
-  let namespaces = $state([]);
-  let stats = $state(null);
-  let loading = $state(true);
-  let error = $state('');
+  let namespaces = [];
+  let stats = null;
+  let loading = true;
+  let error = '';
 
   async function load() {
     loading = true;
@@ -34,7 +34,7 @@
       <p class="text-gray-400 text-sm mt-1">On-chain file storage on the Internet Computer</p>
     </div>
     <button
-      onclick={load}
+      on:click={load}
       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors"
     >
       <RefreshCw class="w-4 h-4 {loading ? 'animate-spin' : ''}" /> Refresh

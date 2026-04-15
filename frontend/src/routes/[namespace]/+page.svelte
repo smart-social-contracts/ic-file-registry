@@ -12,18 +12,18 @@
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
 
-  const namespace = $derived(decodeURIComponent($page.params.namespace));
+  $: namespace = decodeURIComponent($page.params.namespace);
 
-  let files = $state([]);
-  let acl = $state({});
-  let loading = $state(true);
-  let error = $state('');
-  let uploading = $state(false);
-  let uploadProgress = $state({ current: 0, total: 0, filename: '' });
-  let copiedPath = $state('');
-  let showAcl = $state(false);
-  let newPrincipal = $state('');
-  let aclError = $state('');
+  let files = [];
+  let acl = {};
+  let loading = true;
+  let error = '';
+  let uploading = false;
+  let uploadProgress = { current: 0, total: 0, filename: '' };
+  let copiedPath = '';
+  let showAcl = false;
+  let newPrincipal = '';
+  let aclError = '';
 
   async function load() {
     loading = true;
@@ -112,12 +112,12 @@
     setTimeout(() => (copiedPath = ''), 2000);
   }
 
-  let dragOver = $state(false);
+  let dragOver = false;
   function onDragOver(e) { e.preventDefault(); dragOver = true; }
   function onDragLeave() { dragOver = false; }
   function onDrop(e) { e.preventDefault(); dragOver = false; handleFileUpload(e); }
 
-  const nsAcl = $derived(acl[namespace] ?? []);
+  $: nsAcl = acl[namespace] ?? [];
 </script>
 
 <svelte:head><title>{namespace} — IC File Registry</title></svelte:head>
@@ -135,18 +135,18 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick={load} class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+      <button on:click={load} class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
         <RefreshCw class="w-4 h-4 {loading ? 'animate-spin' : ''}" />
       </button>
       {#if $isAuthenticated}
         <button
-          onclick={() => (showAcl = !showAcl)}
+          on:click={() => showAcl = !showAcl}
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors"
         >
           <Shield class="w-4 h-4" /> ACL
         </button>
         <button
-          onclick={handleDeleteNamespace}
+          on:click={handleDeleteNamespace}
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/40 hover:bg-red-900/70 text-red-400 text-sm transition-colors"
         >
           <FolderX class="w-4 h-4" /> Delete namespace
@@ -179,7 +179,7 @@
           {#each nsAcl as p (p)}
             <li class="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
               <span class="font-mono text-xs text-gray-300">{p}</span>
-              <button onclick={() => handleRevoke(p)} class="text-gray-500 hover:text-red-400 transition-colors">
+              <button on:click={() => handleRevoke(p)} class="text-gray-500 hover:text-red-400 transition-colors">
                 <UserMinus class="w-4 h-4" />
               </button>
             </li>
@@ -193,7 +193,7 @@
           class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm font-mono text-gray-200 placeholder-gray-600 focus:outline-none focus:border-blue-500"
         />
         <button
-          onclick={handleGrant}
+          on:click={handleGrant}
           class="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm transition-colors"
         >
           <UserPlus class="w-4 h-4" /> Grant
@@ -209,9 +209,9 @@
       aria-label="File upload area"
       class="border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
              {dragOver ? 'border-blue-500 bg-blue-900/10' : 'border-gray-700 hover:border-gray-500'}"
-      ondragover={onDragOver}
-      ondragleave={onDragLeave}
-      ondrop={onDrop}
+      on:dragover={onDragOver}
+      on:dragleave={onDragLeave}
+      on:drop={onDrop}
     >
       {#if uploading}
         <div class="space-y-2">
@@ -230,7 +230,7 @@
           <span class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">
             Choose files
           </span>
-          <input type="file" multiple class="hidden" onchange={handleFileUpload} />
+          <input type="file" multiple class="hidden" on:change={handleFileUpload} />
         </label>
         <p class="text-xs text-gray-600 mt-3">Files &gt; 500 KB are uploaded in chunks automatically.</p>
       {/if}
@@ -267,7 +267,7 @@
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-2">
                   <button
-                    onclick={() => copyUrl(file.path)}
+                    on:click={() => copyUrl(file.path)}
                     title="Copy URL"
                     class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
                   >
@@ -279,7 +279,7 @@
                   </button>
                   {#if $isAuthenticated}
                     <button
-                      onclick={() => handleDelete(file.path)}
+                      on:click={() => handleDelete(file.path)}
                       title="Delete file"
                       class="p-1.5 rounded-lg hover:bg-red-900/40 text-gray-500 hover:text-red-400 transition-colors"
                     >

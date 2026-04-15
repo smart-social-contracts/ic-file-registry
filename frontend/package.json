@@ -2,6 +2,7 @@
   "name": "ic-file-registry-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -10,6 +11,7 @@
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
     "svelte": "^5.0.0",

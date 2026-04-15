@@ -5,8 +5,6 @@
   import { LogIn, LogOut, Database } from 'lucide-svelte';
 
   onMount(() => initAuth());
-
-  let { children } = $props();
 </script>
 
 <div class="min-h-screen bg-gray-950 text-gray-100">
@@ -23,14 +21,14 @@
             {$principal.slice(0, 12)}...
           </span>
           <button
-            onclick={logout}
+            on:click={logout}
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors"
           >
             <LogOut class="w-4 h-4" /> Log out
           </button>
         {:else}
           <button
-            onclick={login}
+            on:click={login}
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-medium transition-colors"
           >
             <LogIn class="w-4 h-4" /> Login with Internet Identity
@@ -41,6 +39,6 @@
   </nav>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
-    {@render children()}
+    <slot />
   </main>
 </div>
