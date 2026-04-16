@@ -181,7 +181,13 @@ def _require_publisher(namespace: str) -> str | None:
         return None
     caller = ic.caller().to_str()
     acl = _load_acl()
-    if caller in acl.get(namespace, []):
+    ns_acl = acl.get(namespace, [])
+    if caller in ns_acl:
+        return None
+    # Auto-grant: first authenticated caller to a new namespace becomes its publisher
+    if not ns_acl:
+        acl[namespace] = [caller]
+        _save_acl(acl)
         return None
     return json.dumps({"error": f"Unauthorized: not a publisher for namespace '{namespace}'"})
 
