@@ -245,7 +245,7 @@ window.loadDetail = async (ns) => {
 };
 
 window.copyFileUrl = (ns, path) => {
-  const url = `https://${CANISTER_ID}.icp0.io/${ns}/${path}`;
+  const url = `https://${CANISTER_ID}.raw.icp0.io/${ns}/${path}`;
   navigator.clipboard.writeText(url);
 };
 

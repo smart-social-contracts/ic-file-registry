@@ -646,9 +646,8 @@ def _http_response(status: int, body: bytes, content_type: str, extra_headers=No
     }
 
 
-@query
-def http_request(req: HttpRequest) -> HttpResponseIncoming:
-    """Serve files over HTTP with CORS. Suitable for browser fetch() / import()."""
+def _handle_http(req: dict) -> dict:
+    """Shared logic for http_request and http_request_update."""
     method = req["method"].upper()
     url = req["url"]
     path = url.split("?")[0].lstrip("/")
@@ -686,3 +685,21 @@ def http_request(req: HttpRequest) -> HttpResponseIncoming:
     return _http_response(200, content, content_type, [
         ("Cache-Control", "public, max-age=3600"),
     ])
+
+
+@query
+def http_request(req: HttpRequest) -> HttpResponseIncoming:
+    """Signal the gateway to upgrade to an update call for certified responses."""
+    return {
+        "status_code": 200,
+        "headers": [],
+        "body": b"",
+        "streaming_strategy": None,
+        "upgrade": True,
+    }
+
+
+@update
+def http_request_update(req: HttpRequest) -> HttpResponseIncoming:
+    """Serve files over HTTP with CORS. Runs as update so response is certified."""
+    return _handle_http(req)
