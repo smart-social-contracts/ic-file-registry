@@ -19679,8 +19679,10 @@ async function initUI() {
   if (_authed) {
     badge.textContent = principal.slice(0, 16) + "\u2026";
     badge.classList.remove("hidden");
+    el("globalUploadPanel").classList.remove("hidden");
   } else {
     badge.classList.add("hidden");
+    el("globalUploadPanel").classList.add("hidden");
   }
   await loadNamespaces();
 }
@@ -19706,10 +19708,7 @@ window.loadNamespaces = async () => {
     el("statsRow").classList.remove("hidden");
     const container = el("nsList");
     if (!nsList.length) {
-      container.innerHTML = `<div class="text-center py-12 text-gray-500">
-        <p class="mt-2">No namespaces yet.</p>
-        ${_authed ? '<p class="text-sm mt-1">Upload a file to create the first namespace.</p>' : '<p class="text-sm mt-1">Log in to upload files.</p>'}
-      </div>`;
+      container.innerHTML = _authed ? "" : '<div class="text-center py-8 text-gray-500"><p>Log in to upload files.</p></div>';
     } else {
       container.innerHTML = nsList.map((ns) => `
         <div onclick="showNsDetail('${esc(ns.namespace)}')"
@@ -19804,7 +19803,10 @@ window.copyFileUrl = (ns, path) => {
   navigator.clipboard.writeText(url);
 };
 function setUploadMsg(msg) {
-  el("uploadMsg").textContent = msg;
+  ["uploadMsg", "globalUploadMsg"].forEach((id) => {
+    const e = el(id);
+    if (e) e.textContent = msg;
+  });
 }
 async function uploadBuffer(ns, filename, buf, contentType) {
   const total = Math.ceil(buf.byteLength / CHUNK_SIZE);
@@ -19835,27 +19837,44 @@ async function uploadBuffer(ns, filename, buf, contentType) {
   const fin = await call("finalize_chunked_file", { namespace: ns, path: filename });
   if (fin.error) throw new Error(fin.error);
 }
-async function uploadFiles(files) {
-  el("uploadIdle").classList.add("hidden");
-  el("uploadProgress").classList.remove("hidden");
+async function uploadFiles(files, targetNs, idleEl, progressEl) {
+  el(idleEl).classList.add("hidden");
+  el(progressEl).classList.remove("hidden");
   for (const file of files) {
     try {
       setUploadMsg(`Uploading ${file.name}\u2026`);
       const buf = await file.arrayBuffer();
-      await uploadBuffer(currentNs, file.name, buf, guessContentType(file.name));
+      await uploadBuffer(targetNs, file.name, buf, guessContentType(file.name));
     } catch (e) {
       showErr(`Upload failed for ${file.name}: ${e.message}`);
     }
   }
-  el("uploadIdle").classList.remove("hidden");
-  el("uploadProgress").classList.add("hidden");
-  await loadDetail(currentNs);
+  el(idleEl).classList.remove("hidden");
+  el(progressEl).classList.add("hidden");
   await loadNamespaces();
+  if (currentNs === targetNs) await loadDetail(targetNs);
 }
-window.handleFileInput = (e) => uploadFiles(e.target.files);
+window.handleFileInput = (e) => uploadFiles(e.target.files, currentNs, "uploadIdle", "uploadProgress");
 window.handleDrop = (e) => {
   e.preventDefault();
-  uploadFiles(e.dataTransfer.files);
+  uploadFiles(e.dataTransfer.files, currentNs, "uploadIdle", "uploadProgress");
+};
+window.handleGlobalFileInput = (e) => {
+  const ns = el("globalNsInput").value.trim();
+  if (!ns) {
+    showErr("Please enter a namespace name.");
+    return;
+  }
+  uploadFiles(e.target.files, ns, "globalUploadIdle", "globalUploadProgress");
+};
+window.handleGlobalDrop = (e) => {
+  e.preventDefault();
+  const ns = el("globalNsInput").value.trim();
+  if (!ns) {
+    showErr("Please enter a namespace name.");
+    return;
+  }
+  uploadFiles(e.dataTransfer.files, ns, "globalUploadIdle", "globalUploadProgress");
 };
 window.handleDeleteFile = async (ns, path) => {
   if (!confirm(`Delete ${path}?`)) return;
