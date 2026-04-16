@@ -6,30 +6,30 @@
   <title>IC File Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background:#030712; }
+    body { background:#f9fafb; }
     .spin { animation:spin 1s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
-<body class="min-h-screen text-gray-100">
+<body class="min-h-screen text-gray-900">
 
-<nav class="border-b border-gray-800 bg-gray-900 sticky top-0 z-10">
+<nav class="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 text-white font-semibold text-lg hover:text-gray-300 transition-colors">
-      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <a href="/" class="flex items-center gap-2 text-gray-900 font-semibold text-lg hover:text-gray-600 transition-colors">
+      <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
       </svg>
       IC File Registry
     </a>
     <div class="flex items-center gap-3">
-      <span id="principalBadge" class="hidden text-xs text-gray-400 font-mono max-w-xs truncate"></span>
+      <span id="principalBadge" class="hidden text-xs text-gray-500 font-mono max-w-xs truncate"></span>
       <button id="loginBtn" onclick="handleLogin()"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-black text-sm font-medium transition-colors">
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium transition-colors">
         Login with Internet Identity
       </button>
       <button id="logoutBtn" onclick="handleLogout()"
-        class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors">
+        class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm transition-colors">
         Log out
       </button>
     </div>
@@ -39,28 +39,28 @@
 <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
 
   <div id="statsRow" class="hidden grid grid-cols-3 gap-4">
-    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
-      <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Namespaces</div>
-      <div class="text-2xl font-bold text-white" id="statNs">—</div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Namespaces</div>
+      <div class="text-2xl font-bold text-gray-900" id="statNs">—</div>
     </div>
-    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
-      <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Files</div>
-      <div class="text-2xl font-bold text-white" id="statFiles">—</div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total Files</div>
+      <div class="text-2xl font-bold text-gray-900" id="statFiles">—</div>
     </div>
-    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
-      <div class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Size</div>
-      <div class="text-2xl font-bold text-white" id="statSize">—</div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total Size</div>
+      <div class="text-2xl font-bold text-gray-900" id="statSize">—</div>
     </div>
   </div>
 
-  <div id="errBox" class="hidden flex items-center gap-2 p-4 rounded-xl bg-red-900/30 border border-red-700 text-red-300 text-sm"></div>
+  <div id="errBox" class="hidden flex items-center gap-2 p-4 rounded-xl bg-red-50 border border-red-300 text-red-700 text-sm"></div>
 
   <!-- Namespace list view -->
   <div id="viewNsList">
     <div class="flex items-center justify-between mb-3">
-      <h1 class="text-2xl font-bold text-white">File Registry</h1>
+      <h1 class="text-2xl font-bold text-gray-900">File Registry</h1>
       <button onclick="loadNamespaces()"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors">
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm transition-colors">
         <svg id="refreshNsIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -70,44 +70,44 @@
     </div>
 
     <!-- Global upload panel (only shown when authenticated) -->
-    <div id="globalUploadPanel" class="hidden mb-6 bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-      <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Upload Files</h2>
+    <div id="globalUploadPanel" class="hidden mb-6 bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Upload Files</h2>
       <div class="flex items-center gap-3">
-        <label class="text-xs text-gray-400 whitespace-nowrap">Namespace</label>
+        <label class="text-xs text-gray-600 whitespace-nowrap">Namespace</label>
         <input id="globalNsInput" type="text" placeholder="e.g. my-project"
-          class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
-                 placeholder-gray-600 outline-none focus:border-white transition-colors"/>
+          class="flex-1 bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 font-mono
+                 placeholder-gray-400 outline-none focus:border-gray-500 transition-colors"/>
       </div>
-      <div class="border-2 border-dashed border-gray-700 hover:border-gray-500 rounded-xl p-6 text-center transition-all cursor-pointer"
-        ondragover="event.preventDefault(); this.classList.add('!border-white')"
-        ondragleave="this.classList.remove('!border-white')"
-        ondrop="this.classList.remove('!border-white'); handleGlobalDrop(event)">
+      <div class="border-2 border-dashed border-gray-300 hover:border-gray-500 rounded-xl p-6 text-center transition-all cursor-pointer"
+        ondragover="event.preventDefault(); this.classList.add('!border-gray-700')"
+        ondragleave="this.classList.remove('!border-gray-700')"
+        ondrop="this.classList.remove('!border-gray-700'); handleGlobalDrop(event)">
         <div id="globalUploadIdle">
-          <svg class="w-7 h-7 mx-auto text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-7 h-7 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
-          <p class="text-gray-400 text-sm mb-3">Drag &amp; drop files here, or</p>
+          <p class="text-gray-500 text-sm mb-3">Drag &amp; drop files here, or</p>
           <label class="cursor-pointer">
-            <span class="px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-medium transition-colors">
+            <span class="px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
               Choose files
             </span>
             <input type="file" multiple class="hidden" onchange="handleGlobalFileInput(event)"/>
           </label>
-          <p class="text-xs text-gray-600 mt-3">Files &gt; 400 KB are uploaded in chunks automatically.</p>
+          <p class="text-xs text-gray-400 mt-3">Files &gt; 400 KB are uploaded in chunks automatically.</p>
         </div>
         <div id="globalUploadProgress" class="hidden space-y-2">
-          <svg class="w-7 h-7 mx-auto text-white spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-7 h-7 mx-auto text-gray-500 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
-          <p class="text-sm text-gray-400" id="globalUploadMsg">Uploading…</p>
+          <p class="text-sm text-gray-600" id="globalUploadMsg">Uploading…</p>
         </div>
       </div>
     </div>
 
     <div id="nsList" class="space-y-2">
-      <div class="flex items-center gap-2 text-gray-500 py-8 justify-center">
+      <div class="flex items-center gap-2 text-gray-400 py-8 justify-center">
         <svg class="w-4 h-4 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -121,56 +121,56 @@
   <div id="viewNsDetail" class="hidden space-y-6">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <button onclick="showNsList()" class="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">
+        <button onclick="showNsList()" class="text-gray-400 hover:text-gray-900 transition-colors bg-transparent border-none cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
         <div>
-          <h1 class="text-xl font-bold text-white font-mono" id="detailNsName"></h1>
+          <h1 class="text-xl font-bold text-gray-900 font-mono" id="detailNsName"></h1>
           <p class="text-xs text-gray-500 mt-0.5" id="detailFileCount"></p>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="loadDetail(currentNs)"
-          class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors border-none cursor-pointer text-gray-100">
+          class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors border-none cursor-pointer text-gray-700">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
         </button>
         <button id="btnDeleteNs" onclick="handleDeleteNamespace()"
-          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/40 hover:bg-red-900/70 text-red-400 text-sm transition-colors border-none cursor-pointer">
+          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-sm transition-colors border-none cursor-pointer">
           Delete namespace
         </button>
       </div>
     </div>
 
     <div id="uploadZone" class="hidden">
-      <div class="border-2 border-dashed border-gray-700 hover:border-gray-500 rounded-xl p-8 text-center transition-all cursor-pointer"
-        ondragover="event.preventDefault(); this.classList.add('border-white')"
-        ondragleave="this.classList.remove('border-white')"
-        ondrop="this.classList.remove('border-white'); handleDrop(event)">
+      <div class="border-2 border-dashed border-gray-300 hover:border-gray-500 rounded-xl p-8 text-center transition-all cursor-pointer"
+        ondragover="event.preventDefault(); this.classList.add('border-gray-700')"
+        ondragleave="this.classList.remove('border-gray-700')"
+        ondrop="this.classList.remove('border-gray-700'); handleDrop(event)">
         <div id="uploadIdle">
-          <svg class="w-8 h-8 mx-auto text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-8 h-8 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
-          <p class="text-gray-400 text-sm mb-3">Drag &amp; drop files here, or</p>
+          <p class="text-gray-500 text-sm mb-3">Drag &amp; drop files here, or</p>
           <label class="cursor-pointer">
-            <span class="px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-medium transition-colors">
+            <span class="px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
               Choose files
             </span>
             <input type="file" multiple class="hidden" onchange="handleFileInput(event)"/>
           </label>
-          <p class="text-xs text-gray-600 mt-3">Files &gt; 400 KB are uploaded in chunks automatically.</p>
+          <p class="text-xs text-gray-400 mt-3">Files &gt; 400 KB are uploaded in chunks automatically.</p>
         </div>
         <div id="uploadProgress" class="hidden space-y-2">
-          <svg class="w-8 h-8 mx-auto text-white spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-8 h-8 mx-auto text-gray-500 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
-          <p class="text-sm text-gray-400" id="uploadMsg">Uploading…</p>
+          <p class="text-sm text-gray-600" id="uploadMsg">Uploading…</p>
         </div>
       </div>
     </div>
@@ -180,10 +180,10 @@
 
 </main>
 
-<footer class="border-t border-gray-800 mt-12 py-5">
-  <div class="max-w-6xl mx-auto px-4 text-center text-xs text-gray-600">
+<footer class="border-t border-gray-200 mt-12 py-5">
+  <div class="max-w-6xl mx-auto px-4 text-center text-xs text-gray-400">
     Powered by <a href="https://github.com/smart-social-contracts/basilisk" target="_blank" rel="noopener"
-      class="text-gray-400 hover:text-white transition-colors underline underline-offset-2">Basilisk</a>
+      class="text-gray-500 hover:text-gray-900 transition-colors underline underline-offset-2">Basilisk</a>
   </div>
 </footer>
 

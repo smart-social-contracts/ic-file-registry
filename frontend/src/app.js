@@ -152,18 +152,18 @@ window.loadNamespaces = async () => {
     } else {
       container.innerHTML = nsList.map(ns => `
         <div onclick="showNsDetail('${esc(ns.namespace)}')"
-          class="flex items-center justify-between p-4 bg-gray-900 border border-gray-800 rounded-xl
-                 hover:border-gray-500 hover:bg-gray-800 transition-all cursor-pointer group">
+          class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl
+                 hover:border-gray-400 hover:bg-gray-50 transition-all cursor-pointer group shadow-sm">
           <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
             </svg>
-            <span class="font-mono text-sm text-white group-hover:text-gray-300 transition-colors">
+            <span class="font-mono text-sm text-gray-900 group-hover:text-gray-600 transition-colors">
               ${esc(ns.namespace)}
             </span>
           </div>
-          <div class="flex items-center gap-6 text-sm text-gray-400">
+          <div class="flex items-center gap-6 text-sm text-gray-500">
             <span>${fmtBytes(ns.total_bytes)}</span>
             <span>${ns.file_count} ${ns.file_count === 1 ? 'file' : 'files'}</span>
           </div>
@@ -207,10 +207,10 @@ window.loadDetail = async (ns) => {
     }
 
     el('fileTable').innerHTML = `
-      <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+            <tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider bg-gray-50">
               <th class="text-left px-4 py-3">Path</th>
               <th class="text-left px-4 py-3 hidden sm:table-cell">Type</th>
               <th class="text-right px-4 py-3">Size</th>
@@ -219,26 +219,26 @@ window.loadDetail = async (ns) => {
           </thead>
           <tbody>
             ${files.map(f => `
-              <tr class="border-b border-gray-800/50 hover:bg-gray-800/40 transition-colors">
-                <td class="px-4 py-3 font-mono text-xs text-gray-300">${esc(f.path)}</td>
-                <td class="px-4 py-3 text-gray-400 text-xs hidden sm:table-cell">${esc(f.content_type)}</td>
-                <td class="px-4 py-3 text-gray-400 text-right">${fmtBytes(f.size)}</td>
+              <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-xs text-gray-700">${esc(f.path)}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">${esc(f.content_type)}</td>
+                <td class="px-4 py-3 text-gray-500 text-right">${fmtBytes(f.size)}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-2">
                     <button onclick="handleDownloadFile('${esc(ns)}','${esc(f.path)}')"
                       title="Download"
-                      class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors text-xs">
+                      class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors text-xs">
                       ⬇
                     </button>
                     <button onclick="copyFileUrl('${esc(ns)}','${esc(f.path)}')"
                       title="Copy URL"
-                      class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors text-xs">
+                      class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors text-xs">
                       📋
                     </button>
                     ${_authed ? `
                     <button onclick="handleDeleteFile('${esc(ns)}','${esc(f.path)}')"
                       title="Delete"
-                      class="p-1.5 rounded-lg hover:bg-red-900/40 text-gray-500 hover:text-red-400 transition-colors text-xs">
+                      class="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors text-xs">
                       🗑
                     </button>` : ''}
                   </div>
