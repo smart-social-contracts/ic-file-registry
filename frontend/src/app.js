@@ -17,6 +17,7 @@ const idlFactory = ({ IDL }) => IDL.Service({
   list_namespaces:       IDL.Func([],          [IDL.Text], ['query']),
   get_stats:             IDL.Func([],          [IDL.Text], ['query']),
   list_files:            IDL.Func([IDL.Text],  [IDL.Text], ['query']),
+  get_file:              IDL.Func([IDL.Text],  [IDL.Text], ['query']),
   store_file:            IDL.Func([IDL.Text],  [IDL.Text], []),
   store_file_chunk:      IDL.Func([IDL.Text],  [IDL.Text], []),
   finalize_chunked_file: IDL.Func([IDL.Text],  [IDL.Text], []),
