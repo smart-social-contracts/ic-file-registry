@@ -1,7 +1,7 @@
 .dfx/
 .basilisk/
 node_modules/
-frontend/dist/
+# frontend/dist is committed — it's the pre-built canister artifact
 frontend/.svelte-kit/
 __pycache__/
 *.pyc
