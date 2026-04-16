@@ -19777,6 +19777,11 @@ window.loadDetail = async (ns) => {
                 <td class="px-4 py-3 text-gray-400 text-right">${fmtBytes(f.size)}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-2">
+                    <button onclick="handleDownloadFile('${esc(ns)}','${esc(f.path)}')"
+                      title="Download"
+                      class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors text-xs">
+                      \u2B07
+                    </button>
                     <button onclick="copyFileUrl('${esc(ns)}','${esc(f.path)}')"
                       title="Copy URL"
                       class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors text-xs">
@@ -19801,6 +19806,25 @@ window.loadDetail = async (ns) => {
 window.copyFileUrl = (ns, path) => {
   const url = `https://${CANISTER_ID}.raw.icp0.io/${ns}/${path}`;
   navigator.clipboard.writeText(url);
+};
+window.handleDownloadFile = async (ns, path) => {
+  try {
+    const res = await call("get_file", { namespace: ns, path });
+    if (res.error) {
+      showErr(res.error);
+      return;
+    }
+    const bytes = Uint8Array.from(atob(res.content_b64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: res.content_type || "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = path.split("/").pop();
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    showErr(e.message);
+  }
 };
 function setUploadMsg(msg) {
   ["uploadMsg", "globalUploadMsg"].forEach((id) => {
